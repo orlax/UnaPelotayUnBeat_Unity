@@ -19,10 +19,10 @@ Es posible cambiar el BPM para hacer el beat mas rapido o lento (hay un pequeño
 
 #### Unas notas finales: 
 
-Es la primera vez que uso **OnAudioFilterRead** cosas que podrian mejorar: 
+Es la primera vez que uso ***OnAudioFilterRead*** cosas que podrian mejorar: 
 
 - mejorar el sonido, ahora hay una distorsion. Creo que algo pasa con el samplerate o la configuracion de los clips importados que esta generando eso. 
 - el double kick tiene un espacio entre los kick fijos, creo que esto se podria calcular de acuerdo al BPM actual. 
 - en general no estoy seguro de si esta es la mejor implementacion de un drum kit procedural. 
 
-Los assets de artes fuerón proveeidos por: [Kenney](https://www.kenney.nl/assets/scribble-platformer)
+Los assets de artes fuerón proveídos por: [Kenney](https://www.kenney.nl/assets/scribble-platformer)
