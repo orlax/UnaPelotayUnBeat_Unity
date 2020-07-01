@@ -25,3 +25,4 @@ Es la primera vez que uso **OnAudioFilterRead** cosas que podrian mejorar:
 - el double kick tiene un espacio entre los kick fijos, creo que esto se podria calcular de acuerdo al BPM actual. 
 - en general no estoy seguro de si esta es la mejor implementacion de un drum kit procedural. 
 
+Los assets de artes fuerón proveeidos por: [Kenney](https://www.kenney.nl/assets/scribble-platformer)
