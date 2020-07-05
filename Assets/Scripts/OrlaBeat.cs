@@ -31,8 +31,7 @@ public class OrlaBeat : MonoBehaviour
         double startTick = AudioSettings.dspTime;
         sampleRate = AudioSettings.outputSampleRate;
         nextTick = startTick * sampleRate;
-        running = true;
-
+        
         //populamos el sample del single snare
         snareSamples = new float[snareClip.samples * snareClip.channels];
         snareClip.GetData(snareSamples, 0);
@@ -42,26 +41,39 @@ public class OrlaBeat : MonoBehaviour
         kickClip.GetData(KickSamples, 0);
 
         //double kick
-        //para el double kick, sampleamos el kick dos veces con un espacio de tiempo en silencio (ceros) entre los dos.
-        var timeBetweenHits = (int)(sampleRate * 0.18f); // la cantidad de silencio (ceros) entre los dos hits. 
-        DoubleKickSamples = new float[KickSamples.Length * 2 + timeBetweenHits];//alocamos el array kick * 2 + silencio.
+        //para el double kick, sampleamos el kick dos veces con un espacio de tiempo en silencio (ceros) antes y  entre los dos kicks.
+
+
+        // la cantidad de silencio (ceros) entre los dos hits.
+        //var timeBetweenHits = (int)(sampleRate * 60.0F / bpm)*0.18f; // no estoy seguro de porque este calculo no funciona.  
+        var timeBetweenHits = (int)(sampleRate * 0.15F);  //este se asimila bastante a los 120bpm, pero es fijo. cambiar los bpm hace que se pierda la estructura del ritmo.
+
+        DoubleKickSamples = new float[(KickSamples.Length * 2) + (int)(timeBetweenHits*2f)];//alocamos el array kick * 2 + silencio*3.
+        //hay un pequeno silencio al comienzo del tercer tiempo, agregamos 0 para eso. 
         var n = 0; //con n voy llevando la cuenta de por donde voy en el array. 
+        for(int i = 0; i< timeBetweenHits; i++)
+        {
+            DoubleKickSamples[n + i] = 0;
+        }
+        n += (int)(timeBetweenHits); 
         for(int i = 0; i<KickSamples.Length; i++)
         {
-            DoubleKickSamples[i] = KickSamples[i]; 
+            DoubleKickSamples[n+i] = KickSamples[i]; 
         }
         n += KickSamples.Length; //ya sampleamos el primer kick
-        for(int i = 0; i< timeBetweenHits; i++)
+        for(int i = 0; i< (int)timeBetweenHits; i++) 
         {
             DoubleKickSamples[n + i] = 0; 
         }
-        n += timeBetweenHits; // ya agregamos el silencio
+        n += (int)(timeBetweenHits); // ya agregamos el silencio
         for (int i = 0; i < KickSamples.Length; i++)
         {
             DoubleKickSamples[n + i] = KickSamples[i];
         }
 
         currentSamples = KickSamples;//empezamos siempre con el sample kick. 
+
+        running = true;
     }
 
     //tengo que leer mucho mas sobre esta funcion. 
