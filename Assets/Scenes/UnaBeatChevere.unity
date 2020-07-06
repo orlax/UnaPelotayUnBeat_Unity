@@ -1511,7 +1511,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9dd8aeb9d2cf8649afc08bb3ea9f4b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bpm: 100
+  bpm: 120
   gain: 0.7
   signatureHi: 4
   signatureLo: 4

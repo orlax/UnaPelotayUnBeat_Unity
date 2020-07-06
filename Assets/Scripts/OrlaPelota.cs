@@ -7,6 +7,7 @@ public class OrlaPelota : MonoBehaviour, OrlaFisicasInterface
 {
     public OrlaFisicas.Circulo circulo; // estructura basica de este objeto. 
     public float tamano = .5f;
+    public float deformacion = 0.5f; 
 
     public Vector3 velocidad;
     private Vector3 ultimaVelocidad; 
@@ -28,6 +29,8 @@ public class OrlaPelota : MonoBehaviour, OrlaFisicasInterface
         circulo = new OrlaFisicas.Circulo();
         circulo.posicion = transform.position;
         circulo.radio = tamano / 2; 
+        circulo.deformacionMinima = deformacion;
+        circulo.deformacion = 1; 
 
         velocidad = Vector3.zero; 
     }
@@ -43,18 +46,23 @@ public class OrlaPelota : MonoBehaviour, OrlaFisicasInterface
         //guardamos la ultima velocidad conocida, antes de que la modifiquemos. 
         ultimaVelocidad = velocidad;
 
-        //GRAVEDAD
-        velocidad += new Vector3(0,OrlaFisicas.Instancia.Gravedad * Time.deltaTime,0);
+        //GRAVEDAD solo si no nos estamos deformando.
+        velocidad += new Vector3(0, OrlaFisicas.Instancia.Gravedad * circulo.deformacion * Time.deltaTime, 0);
 
         //Limites
-        velocidad = OrlaFisicas.Instancia.LimiteCirculoVsPiso(circulo, velocidad);
+        velocidad = OrlaFisicas.Instancia.LimiteCirculoVsPiso(ref circulo, velocidad);
         velocidad = OrlaFisicas.Instancia.LimiteCirculoVsLateral(circulo, velocidad); 
-        velocidad = OrlaFisicas.Instancia.CirculoVsLineas(circulo, velocidad); 
+        velocidad = OrlaFisicas.Instancia.CirculoVsLineas(ref circulo, velocidad); 
 
         Friccion();
         Deformacion(); 
 
-        transform.position += velocidad; //aplicamos la velocidad en cada frame 
+        
+        if(circulo.deformacion == 1)
+        {
+            transform.position += velocidad; //aplicamos la velocidad en cada frame si no nos estamos deformando
+        }
+       
 
         //estamos en el piso? si la velocidad en y es diferente de cero, asumimos que No estamos en el piso. 
         if (velocidad.y != 0) { EnElPiso = false; }
@@ -73,10 +81,18 @@ public class OrlaPelota : MonoBehaviour, OrlaFisicasInterface
             //rotar de acuerdo a la velocidad 
             var angulo = Mathf.Atan2(velocidad.x, velocidad.y) * Mathf.Rad2Deg;
             transform.rotation = Quaternion.AngleAxis(angulo, Vector3.forward);
-            //escalar en x de acuerdo a la velocidad en y
-            var estiramiento = velocidad.magnitude * 2f;
-            estiramiento = Mathf.Clamp(estiramiento, 0, 0.5f); 
-            transform.localScale = new Vector3( 1- estiramiento, 1+ estiramiento, 1);
+            if (circulo.deformacion == 1)
+            {
+                //escalar en x de acuerdo a la velocidad en y
+                var estiramiento = velocidad.magnitude * 2f;
+                estiramiento = Mathf.Clamp(estiramiento, 0, 0.5f); 
+                transform.localScale = new Vector3( 1- estiramiento, 1+ estiramiento, 1);
+            }
+            else
+            {
+                var estiramiento = 1-circulo.deformacion; 
+                transform.localScale = new Vector3(1 + estiramiento, 1 - estiramiento, 1); 
+            }
         }
         else
         {
@@ -104,9 +120,9 @@ public class OrlaPelota : MonoBehaviour, OrlaFisicasInterface
     /** Cuando un circulo es agarrado, sus fisicas se desactivan. */
     public void Agarrar()
     {
-        velocidad = Vector3.zero; 
+        velocidad = Vector3.zero;
+        circulo.deformacion = 1; 
         fisicasActivadas = false; 
-
     }
 
     //cuando un circulo lo sueltan, puede recibir la velocidad a la que fue soltado y se activan sus fisicas. 

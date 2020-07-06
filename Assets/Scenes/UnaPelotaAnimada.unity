@@ -216,6 +216,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tamano: 0.7
+  deformacion: 0.5
   velocidad: {x: 0, y: 0, z: 0}
   peso: 0.5
   friccionTerrestre: 0.05
@@ -1568,8 +1569,9 @@ MonoBehaviour:
   Gravedad: -0.9
   NivelDelPiso: 0.07
   Paredes: {x: -7.1, y: 7.1}
-  MultiplicadorDeReboteDePiso: 0.65
+  MultiplicadorDeReboteDePiso: 0.45
   VelocidadMinimaDeRebote: 0.03
+  velocidadMinimaDeDeformacion: 0.15
   Pelotas: []
   Lineas: []
   puntoMasCercano: {x: 0, y: 0}

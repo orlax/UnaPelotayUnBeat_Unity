@@ -41,7 +41,9 @@ public class OrlaFisicas : MonoBehaviour
     public struct Circulo
     {
         public Vector2 posicion;
-        public float radio; 
+        public float radio;
+        public float deformacionMinima;
+        public float deformacion; 
     }
 
     public struct Linea
@@ -60,7 +62,8 @@ public class OrlaFisicas : MonoBehaviour
 
     [Range(0,1)]
     public float MultiplicadorDeReboteDePiso;
-    public float VelocidadMinimaDeRebote; 
+    public float VelocidadMinimaDeRebote;
+    public float velocidadMinimaDeDeformacion;  
 
     public List<OrlaPelota> Pelotas; //una lista con todos los circulos existentes en el sistema. 
     public List<OrlaLinea> Lineas; //una lista con todas las lineas existentes en el sistema. 
@@ -91,23 +94,49 @@ public class OrlaFisicas : MonoBehaviour
        // Debug.Log("esta del lado: " + lado);
     }
 
-    //recibe un circulo y devuelve la velocidad modificada de acuerdo al limite del piso. 
-    internal Vector3 LimiteCirculoVsPiso(Circulo circulo, Vector3 velocidad_)
+    internal void AplicarDeformacion(ref Circulo circulo, Vector3 velocidad_)
     {
-        if ((circulo.posicion.y + velocidad_.y) - circulo.radio < NivelDelPiso)
+        //revisamos si la velocidad que llevamos es suficiente para deformarnos.
+        if (velocidad_.y * -1 > velocidadMinimaDeDeformacion)
         {
-            //cuando llegamos al piso, rebotamos verticalmente. 
-            velocidad_.y = velocidad_.y * MultiplicadorDeReboteDePiso * -1;
+            //cuando llegamos al piso empezamos a deformar la pelota. 
+            circulo.deformacion -= Time.deltaTime * 8;
+            if (circulo.deformacion <= circulo.deformacionMinima)
+            {
+                circulo.deformacion = 1;
+            }
+        }
+        //si no lo es no hay deformacion. 
+        else
+        {
+            circulo.deformacion = 1;
+        }
+    }
 
-            if (velocidad_.y < VelocidadMinimaDeRebote)
+    //recibe un circulo y devuelve la velocidad modificada de acuerdo al limite del piso. 
+    internal Vector3 LimiteCirculoVsPiso(ref Circulo circulo, Vector3 velocidad_)
+    {
+        if ((circulo.posicion.y + velocidad_.y) - (circulo.radio * circulo.deformacion) < NivelDelPiso)
+        {
+
+            AplicarDeformacion(ref circulo, velocidad_); 
+
+            //solo rebotamos si la deformacion actual es igual a 1 (no hay deformacion)
+            if (circulo.deformacion == 1)
             {
-                velocidad_.y = 0; //si no superamos la velocidad minima, la velocidad es 0. 
+                velocidad_.y = velocidad_.y * MultiplicadorDeReboteDePiso * -1;
+
+                if (velocidad_.y < VelocidadMinimaDeRebote)
+                {
+                    velocidad_.y = 0; //si no superamos la velocidad minima, la velocidad es 0. 
+                }
+                else
+                {
+                    //si la velocidad es suficiente para mover la pelota, significa que hemos rebotado. 
+                    Rebote();
+                }
             }
-            else
-            {
-                //si la velocidad es suficiente para mover la pelota, significa que hemos rebotado. 
-                Rebote(); 
-            }
+          
         }
         return velocidad_; 
     }
@@ -127,7 +156,7 @@ public class OrlaFisicas : MonoBehaviour
 
     //recibe un circulo y devuelve la velocidad modificada de acuerdo a todas las lineas presentes, 
     //el rebote es en la direccion del vector normal de la linea con la que ocurre la colision.
-    internal Vector3 CirculoVsLineas(Circulo circulo, Vector3 velocidad_)
+    internal Vector3 CirculoVsLineas(ref Circulo circulo, Vector3 velocidad_)
     {
         //comprobamos los limites del circulo contra todas las lineas presentes. 
         foreach(OrlaLinea linea in Lineas)
@@ -135,7 +164,6 @@ public class OrlaFisicas : MonoBehaviour
            var colision =  CirculoVsLinea(circulo, linea.linea);
             if (colision)
             {
-                Debug.Log("colision! " + linea.gameObject.name); 
                 velocidad_ = velocidad_.magnitude * MultiplicadorDeReboteDePiso * linea.linea.normal;
                 if (velocidad_.y < VelocidadMinimaDeRebote)
                 {
@@ -207,7 +235,7 @@ public class OrlaFisicas : MonoBehaviour
     //recibe un punto y un circulo y devuelve si estan colisionando. 
     internal bool PuntoVsCirculo(Circulo circulo, Vector3 punto)
     {
-        return Vector3.Distance(circulo.posicion, punto)<circulo.radio; 
+        return Vector3.Distance(circulo.posicion, punto)<circulo.radio*circulo.deformacion; 
     }
 
     //recibe un punto y una linea retorna un entero. 
